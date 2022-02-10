@@ -1,4 +1,4 @@
-STACK NODE MONGODB
+Stack Node MongoDB
 ==================
 
 Stack Agent Thing framework based REST server built with Mongo, Node and Express.
@@ -6,17 +6,22 @@ Stack Agent Thing framework based REST server built with Mongo, Node and Express
 Requirements
 ============
 
-* nrwtaylor/agent (dev)
+* nrwtaylor/agent (or some form of PHP agent)
 * Express
 * Mongo
 
 Installation
 ============
 
+git clone
+cd to cloned folder
+sudo npm install
+cd src
 
 Usage
 =====
 
+sudo service mongod start
 node index.js
 
 Credits

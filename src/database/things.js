@@ -5,13 +5,24 @@ import { ObjectID } from "mongodb";
 const collectionName = "things";
 
 export async function createThing(ad) {
+
   const database = await getDatabase();
   const event = new Date(Date.now());
   const uuid = uuidv4();
-  const thing = { ...ad, uuid: uuid, createdAt: event.toISOString() };
+
+  const nomFrom = null; // De-reference 
+  const nomTo = 'agent';
+
+  const associations = [uuid];
+  const variables = false;
+
+  const thing = { input:ad, uuid: uuid, associations: associations, nomFrom:nomFrom, nomTo:nomTo, createdAt: event.toISOString(), variables:variables };
   const { insertedId } = await database
     .collection(collectionName)
     .insertOne(thing);
+
+  delete thing._id;
+
   return thing;
 }
 
@@ -39,13 +50,36 @@ export async function setThing(uuid, ad) {
       },
     }
   );
+  delete thing._id;
   return thing;
 }
 
-export async function getThing(uuid) {
+export async function getThing(uuid, input) {
+
+  if (uuid === null) {
+    const thing = await createThing(input);
+  delete thing._id;
+  return thing;
+
+  }
+
   const database = await getDatabase();
   const thing = await database
     .collection(collectionName)
     .findOne({ uuid: uuid });
+
+  if (thing === null) {
+
+//return await createThing(input);
+  const thing = await createThing(input);
+  delete thing._id;
+  return thing;
+
+
+}
+
+  // If this comes back without a uuid, then create it here.
+  delete thing._id;
+
   return thing;
 }

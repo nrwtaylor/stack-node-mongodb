@@ -1,6 +1,5 @@
-// ./src/database/mongo.js
-const {MongoMemoryServer} = require('mongodb-memory-server');
-const {MongoClient} = require('mongodb');
+import {MongoMemoryServer} from 'mongodb-memory-server';
+import {MongoClient} from 'mongodb';
 
 var url = "mongodb://localhost:27017/stack";
 
@@ -21,18 +20,13 @@ async function startDatabase() {
 }
 */
 
-async function startDatabase() {
+export async function startDatabase() {
   const connection = await MongoClient.connect(url, {useNewUrlParser: true});
   database = connection.db();
 }
 
 
-async function getDatabase() {
+export async function getDatabase() {
   if (!database) await startDatabase();
   return database;
 }
-
-module.exports = {
-  getDatabase,
-  startDatabase,
-};

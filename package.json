@@ -1,0 +1,31 @@
+{
+  "name": "stack-node-mongodb",
+  "version": "0.1.0",
+  "description": "Node.js Mongo Thing-Stack using Express",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.13.3",
+    "uuid":"*"
+  },
+  "type": "module" ,
+ "engines": {
+    "node": "4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heroku/node-js-sample"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "express"
+  ],
+  "author": "NRW Taylor",
+  "contributors": [
+    "Nick Taylor <nrwtaylor@gmail.com> (http://stackr.ca)"
+  ],
+  "license": "MIT"
+}

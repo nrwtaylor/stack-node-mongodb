@@ -1,43 +1,51 @@
-// ./src/database/ads.js
-const {getDatabase} = require('./mongo');
-const {ObjectID} = require('mongodb');
+import { v4 as uuidv4 } from "uuid";
+import { getDatabase } from "./mongo.js";
+import { ObjectID } from "mongodb";
 
-const collectionName = 'things';
+const collectionName = "things";
 
-async function insertThing(ad) {
+export async function createThing(ad) {
   const database = await getDatabase();
-  const {insertedId} = await database.collection(collectionName).insertOne(ad);
-  return insertedId;
+  const event = new Date(Date.now());
+  const uuid = uuidv4();
+  const thing = { ...ad, uuid: uuid, createdAt: event.toISOString() };
+  const { insertedId } = await database
+    .collection(collectionName)
+    .insertOne(thing);
+  return thing;
 }
 
-async function getThings() {
+export async function getThings() {
   const database = await getDatabase();
   return await database.collection(collectionName).find({}).toArray();
 }
 
-async function deleteThing(id) {
+export async function forgetThing(uuid) {
   const database = await getDatabase();
   await database.collection(collectionName).deleteOne({
-    _id: new ObjectID(id),
+    uuid: uuid,
   });
 }
 
-async function updateThing(id, ad) {
+export async function setThing(uuid, ad) {
   const database = await getDatabase();
   delete ad._id;
-  await database.collection(collectionName).update(
-    { _id: new ObjectID(id), },
+  const datagram = { ...ad };
+  const thing = await database.collection(collectionName).updateOne(
+    { uuid: uuid },
     {
       $set: {
-        ...ad,
+        variables: { ...datagram },
       },
-    },
+    }
   );
+  return thing;
 }
 
-module.exports = {
-  insertThing,
-  getThings,
-  deleteThing,
-  updateThing,
-};
+export async function getThing(uuid) {
+  const database = await getDatabase();
+  const thing = await database
+    .collection(collectionName)
+    .findOne({ uuid: uuid });
+  return thing;
+}

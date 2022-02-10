@@ -1,14 +1,12 @@
-// ./src/index.js
-
 // importing the dependencies
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
+import express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
 
-const {startDatabase} = require('./database/mongo');
-const {deleteThing, updateThing, insertThing, getThings} = require('./database/things');
+import {startDatabase} from './database/mongo.js';
+import {getThing, forgetThing, setThing, createThing, getThings} from './database/things.js';
 
 // defining the Express app
 const app = express();
@@ -25,6 +23,8 @@ app.use(cors());
 // adding morgan to log HTTP requests
 app.use(morgan('combined'));
 
+app.use(express.json());
+
 app.get('/', async (req, res) => {
   res.send(await getThings());
 });
@@ -35,32 +35,43 @@ app.get('/thing/', async (req, res) => {
   res.send(await getThings());
 });
 
-//app.get('/thing/:id', async (req, res) => {
-//  res.send(await getThing());
-//});
 
-app.post('/thing/', async (req, res) => {
-  const newThing = req.body;
-  await insertThing(newThing);
-  res.send({ message: 'New thing inserted.' });
+app.get('/thing/:id', async (req, res) => {
+  const uuid = req.params.id;
+  const thing = await getThing(uuid);
+  res.send({ message: 'Thing got.', thing:thing })
 });
 
-// endpoint to delete an ad
+// endpoint to create a new thing
+app.post('/thing/', async (req, res) => {
+  const datagram = req.body;
+  const thing = await createThing(datagram);
+  res.send({ message: 'Made a new Thing.', datagram:datagram, uuid:thing.uuid, thing:thing });
+});
+
+// endpoints to forget a thing
 app.delete('/thing/:id', async (req, res) => {
-  await deleteThing(req.params.id);
-  res.send({ message: 'Thing removed.' });
+  const uuid = req.params.id;
+  await forgetThing(uuid);
+  res.send({ message: 'Forgot Thing.', id:req.params.id });
+});
+
+app.get('/thing/:id/forget', async (req, res) => {
+  await forgetThing(req.params.id);
+  res.send({ message: 'Requested Thing be forgotten.', id:req.params.id });
 });
 
 // endpoint to update an ad
 app.put('/thing/:id', async (req, res) => {
-  const updatedThing = req.body;
-  await updateThing(req.params.id, updatedThing);
-  res.send({ message: 'Thing updated.' });
+  const datagram = req.body;
+  const uuid = req.params.id;
+  const thing = await setThing(uuid, datagram);
+  res.send({ message: 'Thing updated.',datagram:datagram, uuid:uuid, thing:thing });
 });
 
 // start the in-memory MongoDB instance
 startDatabase().then(async () => {
-  await insertThing({title: 'Node instance started.'});
+  await createThing({title: 'Node instance started.'});
 
   // start the server
   app.listen(3001, async () => {

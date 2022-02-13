@@ -7,12 +7,16 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.13.3",
-    "uuid":"*"
+    "helmet": "^5.0.2",
+    "mongodb-memory-server": "^8.3.0",
+    "morgan": "^1.10.0",
+    "uuid": "*"
   },
-  "type": "module" ,
- "engines": {
-    "node": "4.0.0"
+  "type": "module",
+  "engines": {
+    "node": "16.7.0"
   },
   "repository": {
     "type": "git",

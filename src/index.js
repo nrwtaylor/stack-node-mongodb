@@ -99,8 +99,13 @@ app.get('/thing/:id/:tokens', async (req, res) => {
 
 app.get('/:tokens', async (req, res) => {
   const tokens = req.params.tokens;
+  const datagram = {text:tokens, agentInput:null};
   const thing = await getThing(null, tokens);
-  res.send({ message: 'Read tokens.', datagram:{text:tokens, agentInput:null}, thing:thing })
+
+  const milliseconds = new Date(Date.now()) - startTime;
+  const thingReport = {message: 'Read tokens.',runtime:milliseconds};
+
+  res.send({ datagram:datagram, uuid:thing.uuid, thing:thing, thingReport:thingReport })
 });
 
 // start the in-memory MongoDB instance

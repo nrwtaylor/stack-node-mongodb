@@ -1,0 +1,20 @@
+# Start the Node Mongo stack as a systemd process
+[Unit]
+Description=Node Mongo stack
+After=network.target
+#StartLimitIntervalSec=0
+
+[Service]
+WorkingDirectory=/var/www/stack-node-mongodb
+Environment=NODE_PORT=3001
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+Type=simple
+Restart=on-failure
+RestartSec=10
+User=root
+Group=nogroup
+ExecStart=node /var/www/stack-node-mongodb/src/index.js
+
+[Install]
+WantedBy=multi-user.target

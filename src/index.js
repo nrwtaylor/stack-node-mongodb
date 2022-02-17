@@ -19,7 +19,7 @@ import gearmanode from "gearmanode";
 const client = gearmanode.client();
 
 //  var milliseconds = new Date(endTime) - new Date(startTime);
-const startTime = new Date(Date.now());
+const startStackTime = new Date(Date.now());
 
 // defining the Express app
 const app = express();
@@ -39,6 +39,7 @@ app.use(morgan('combined'));
 app.use(express.json());
 
 app.get('/', async (req, res) => {
+  const startTime = new Date(Date.now());
   const milliseconds = new Date(Date.now()) - startTime;
   const thingReport = {message:'Factor exchange required', runtime:milliseconds};
   res.send({uuid:null, datagram:false, thing:false, thingReport:thingReport});
@@ -50,7 +51,7 @@ app.get('/', async (req, res) => {
 // Thing endpoints
 
 app.get('/thing/', async (req, res) => {
-
+  const startTime = new Date(Date.now());
   const datagram = {subject:'Nothing', nomTo:'agent', nomFrom:true, agentInput:null}
   const thing = await getThing(null, 'agent');
   const milliseconds = new Date(Date.now()) - startTime;
@@ -64,6 +65,7 @@ app.get('/thing/', async (req, res) => {
 
 
 app.get('/thing/:id', async (req, res) => {
+  const startTime = new Date(Date.now());
   const uuid = req.params.id;
   const thing = await getThing(uuid);
   const milliseconds = new Date(Date.now()) - startTime;
@@ -76,6 +78,7 @@ app.get('/thing/:id', async (req, res) => {
 
 // endpoint to create a new thing
 app.post('/thing/', async (req, res) => {
+  const startTime = new Date(Date.now());
   const datagram = req.body;
   const thing = await createThing(datagram);
   const milliseconds = new Date(Date.now()) - startTime;
@@ -88,12 +91,14 @@ app.post('/thing/', async (req, res) => {
 
 // endpoints to forget a thing
 app.delete('/thing/:id', async (req, res) => {
+  const startTime = new Date(Date.now());
   const uuid = req.params.id;
   await forgetThing(uuid);
   res.send({ message: 'Forgot Thing.', id:req.params.id });
 });
 
 app.get('/thing/:id/forget', async (req, res) => {
+  const startTime = new Date(Date.now());
   await forgetThing(req.params.id);
   const thingReport = {message: 'Requested Thing be forgotten.'};
   res.send({ thingReport:thingReport, thing:{input:req.params.id} });
@@ -111,16 +116,22 @@ app.put('/thing/:id', async (req, res) => {
 */
 
 app.get('/thing/:id/:tokens', async (req, res) => {
+  const startTime = new Date(Date.now());
   const id = req.params.id;
   const tokens = req.params.tokens;
   const thing = await getThing(id, tokens);
 
+  const uuid = thing && thing.uuid ? thing.uuid : false;
+
+  const thingReport = {message: 'Requested Agent look at Thing.'};
+
   callAgent(id, tokens);
 
-  res.send({ message: 'Read tokens.', datagram:{text:tokens, agentInput:null}, thing:thing })
+  res.send({ datagram:{text:tokens, agentInput:null}, uuid:uuid, thing:thing, thingReport:thingReport })
 });
 
 app.get('/:tokens', async (req, res) => {
+  const startTime = new Date(Date.now());
   const tokens = req.params.tokens;
   const datagram = {text:tokens, agentInput:null};
   const thing = await getThing(null, tokens);

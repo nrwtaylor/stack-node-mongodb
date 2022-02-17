@@ -71,10 +71,11 @@ export async function getThing(uuid, input) {
   if (thing === null) {
 
 //return await createThing(input);
-  const thing = await createThing(input);
-  delete thing._id;
-  return thing;
+//  const thing = await createThing(input);
+//  delete thing._id;
 
+//  return thing;
+return false;
 
 }
 

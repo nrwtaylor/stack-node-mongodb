@@ -8,6 +8,16 @@ import morgan from 'morgan';
 import {startDatabase} from './database/mongo.js';
 import {getThing, forgetThing, setThing, createThing, getThings} from './database/things.js';
 
+// Use Gearman to provide the stack connector.
+//import {gearmanode} from 'gearmanode';
+//import pkg from 'gearmanode';
+//const {gearmanode} = pkg;
+
+import gearmanode from "gearmanode";
+
+
+const client = gearmanode.client();
+
 //  var milliseconds = new Date(endTime) - new Date(startTime);
 const startTime = new Date(Date.now());
 
@@ -46,6 +56,8 @@ app.get('/thing/', async (req, res) => {
   const milliseconds = new Date(Date.now()) - startTime;
   const thingReport = {runtime:milliseconds};
 
+  callAgent(thing.uuid, "Get thing.");
+
   res.send({ message: 'Made a new Thing.', datagram:datagram, uuid:thing.uuid, thing:thing, thingReport:thingReport });
 
 });
@@ -56,6 +68,9 @@ app.get('/thing/:id', async (req, res) => {
   const thing = await getThing(uuid);
   const milliseconds = new Date(Date.now()) - startTime;
   const thingReport = {message: 'Thing got.', runtime:milliseconds};
+
+  callAgent(uuid, "Get.");
+
   res.send({ datagram:{}, uuid:thing.uuid, thing:thing, thingReport:thingReport })
 });
 
@@ -65,6 +80,8 @@ app.post('/thing/', async (req, res) => {
   const thing = await createThing(datagram);
   const milliseconds = new Date(Date.now()) - startTime;
   const thingReport = {message: 'Made a new Thing.',runtime:milliseconds};
+
+  callAgent(thing.uuid, "Post");
 
   res.send({ datagram:datagram, uuid:thing.uuid, thing:thing, thingReport:thingReport });
 });
@@ -83,17 +100,23 @@ app.get('/thing/:id/forget', async (req, res) => {
 });
 
 // endpoint to update an ad
+/*
+//Not a stack operation
 app.put('/thing/:id', async (req, res) => {
   const datagram = req.body;
   const uuid = req.params.id;
   const thing = await setThing(uuid, datagram);
   res.send({ message: 'Thing updated.',datagram:datagram, uuid:uuid, thing:thing });
 });
+*/
 
 app.get('/thing/:id/:tokens', async (req, res) => {
   const id = req.params.id;
   const tokens = req.params.tokens;
   const thing = await getThing(id, tokens);
+
+  callAgent(id, tokens);
+
   res.send({ message: 'Read tokens.', datagram:{text:tokens, agentInput:null}, thing:thing })
 });
 
@@ -104,6 +127,8 @@ app.get('/:tokens', async (req, res) => {
 
   const milliseconds = new Date(Date.now()) - startTime;
   const thingReport = {message: 'Read tokens.',runtime:milliseconds};
+
+  callAgent(uuid, tokens);
 
   res.send({ datagram:datagram, uuid:thing.uuid, thing:thing, thingReport:thingReport })
 });
@@ -117,3 +142,80 @@ startDatabase().then(async () => {
     console.log('listening on port 3001');
   });
 });
+
+function callAgent(uuid, text) {
+  console.log("callAgent " + uuid + " " + text);
+var match = false;
+/*
+  if (discordMessage.mentions.has(bot.user)) {
+    console.log("Saw the bot mentioned " + bot.user.id);
+    match = true;
+  }
+*/
+  // Add a list of words the bot should be responsive to.
+  if (text.toLowerCase().includes("ednabot")) {
+    match = true;
+  }
+
+  if (text.toLowerCase().includes("edna")) {
+    match = true;
+  }
+
+  if (text.toLowerCase().includes("control")) {
+    match = true;
+  }
+
+  if (match == false) {
+    return;
+  }
+
+  var datagram = {uuid:uuid};
+
+  //var arr = { from: from, to: to, subject: subject, agent_input: agent_input };
+  var jsonDatagram = JSON.stringify(datagram);
+
+  try {
+    var job = client.submitJob("call_agent", jsonDatagram);
+  } catch (e) {
+    console.log(e);
+
+    var sms = "quiet";
+    var message = "Quietness. Just quietness.";
+  }
+
+  job.on("workData", function (data) {
+    // Uncomment for debugging/testing.
+    //    console.log('WORK_DATA >>> ' + data);
+  });
+
+  job.on("complete", function () {
+    // Create a fallback message.
+    // Which says 'sms'.
+    sms = "sms";
+    message = "sms";
+
+    try {
+      var thing_report = JSON.parse(job.response);
+      var sms = thing_report.sms;
+      var message = thing_report.message;
+
+    } catch (e) {
+      console.log(e);
+
+      var sms = "quiet";
+      var message = "Quietness. Just quietness.";
+    }
+
+    console.log(sms);
+    console.log(message);
+
+    // Respond to the channel with the sms
+    // channel response.
+    //discordMessage.channel.send(sms);
+
+    // dev exploring ways to respond.
+    // discordMessage.reply(sms);
+    // message.lineReply(sms); //Line (Inline) Reply with mention
+    // message.lineReplyNoMention(`My name is ${client.user.username}`); //L
+  });
+}

@@ -128,7 +128,7 @@ app.get('/:tokens', async (req, res) => {
   const milliseconds = new Date(Date.now()) - startTime;
   const thingReport = {message: 'Read tokens.',runtime:milliseconds};
 
-  callAgent(uuid, tokens);
+  callAgent(thing.uuid, tokens);
 
   res.send({ datagram:datagram, uuid:thing.uuid, thing:thing, thingReport:thingReport })
 });
@@ -143,8 +143,8 @@ startDatabase().then(async () => {
   });
 });
 
-function callAgent(uuid, text) {
-  console.log("callAgent " + uuid + " " + text);
+function callAgent(uuid, agent) {
+  console.log("callAgent " + uuid + " " + agent);
 var match = false;
 /*
   if (discordMessage.mentions.has(bot.user)) {
@@ -153,6 +153,7 @@ var match = false;
   }
 */
   // Add a list of words the bot should be responsive to.
+/*
   if (text.toLowerCase().includes("ednabot")) {
     match = true;
   }
@@ -168,8 +169,8 @@ var match = false;
   if (match == false) {
     return;
   }
-
-  var datagram = {uuid:uuid};
+*/
+  var datagram = {uuid:uuid, to:agent, agent_input:agent};
 
   //var arr = { from: from, to: to, subject: subject, agent_input: agent_input };
   var jsonDatagram = JSON.stringify(datagram);

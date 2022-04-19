@@ -9,16 +9,11 @@ import {startDatabase} from './database/mongo.js';
 import {getThing, forgetThing, setThing, createThing, getThings} from './database/things.js';
 
 // Use Gearman to provide the stack connector.
-//import {gearmanode} from 'gearmanode';
-//import pkg from 'gearmanode';
-//const {gearmanode} = pkg;
 
 import gearmanode from "gearmanode";
 
-
 const client = gearmanode.client();
 
-//  var milliseconds = new Date(endTime) - new Date(startTime);
 const startStackTime = new Date(Date.now());
 
 // defining the Express app
@@ -104,7 +99,7 @@ app.get('/thing/:id/forget', async (req, res) => {
   res.send({ thingReport:thingReport, thing:{input:req.params.id} });
 });
 
-// endpoint to update an ad
+// endpoint to update an id
 /*
 //Not a stack operation
 app.put('/thing/:id', async (req, res) => {
@@ -181,11 +176,11 @@ var match = false;
     return;
   }
 */
+  client.jobServers[0].setOption('exceptions', function(){});
   var datagram = {uuid:uuid, to:agent, agent_input:agent};
 
   //var arr = { from: from, to: to, subject: subject, agent_input: agent_input };
   var jsonDatagram = JSON.stringify(datagram);
-
   try {
     var job = client.submitJob("call_agent", jsonDatagram);
   } catch (e) {
@@ -199,6 +194,11 @@ var match = false;
     // Uncomment for debugging/testing.
     //    console.log('WORK_DATA >>> ' + data);
   });
+
+  job.on('exception', function(text) { // needs configuration of job server session (JobServer#setOption)
+    console.log('EXCEPTION >>> ' + text);
+    client.close();
+  })
 
   job.on("complete", function () {
     // Create a fallback message.
@@ -230,4 +230,10 @@ var match = false;
     // message.lineReply(sms); //Line (Inline) Reply with mention
     // message.lineReplyNoMention(`My name is ${client.user.username}`); //L
   });
+
+  job.on('failed', function() {
+    console.log('FAILURE >>> ' + job.handle);
+    client.close();
+  });
+
 }

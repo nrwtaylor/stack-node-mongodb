@@ -24,6 +24,11 @@ Usage
 sudo service mongod start
 node index.js
 
+Notes
+=====
+
+Use Gearman to handle communication with the local stack.
+
 Credits
 =======
 

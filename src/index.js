@@ -17,7 +17,10 @@ const client = gearmanode.client();
 const startStackTime = new Date(Date.now());
 
 // defining the Express app
+var agentFlag = true;
+
 const app = express();
+
 
 // adding Helmet to enhance your API's security
 app.use(helmet());
@@ -176,6 +179,9 @@ var match = false;
     return;
   }
 */
+
+
+  if (agentFlag === false) {return;}
   client.jobServers[0].setOption('exceptions', function(){});
   var datagram = {uuid:uuid, to:agent, agent_input:agent};
 
@@ -184,11 +190,14 @@ var match = false;
   try {
     var job = client.submitJob("call_agent", jsonDatagram);
   } catch (e) {
+    agentFlag = false;
     console.log(e);
 
     var sms = "quiet";
     var message = "Quietness. Just quietness.";
   }
+
+  if (!job) {console.log("GEARMAN JOB SERVER not available"); return;}
 
   job.on("workData", function (data) {
     // Uncomment for debugging/testing.
@@ -196,6 +205,7 @@ var match = false;
   });
 
   job.on('exception', function(text) { // needs configuration of job server session (JobServer#setOption)
+    agentFlag = false;
     console.log('EXCEPTION >>> ' + text);
     client.close();
   })
@@ -231,9 +241,17 @@ var match = false;
     // message.lineReplyNoMention(`My name is ${client.user.username}`); //L
   });
 
+  job.on('error', function() {
+    console.log('ERROR >>> ' + job.handle);
+    agentFlag = false;
+    client.close();
+  });
+
+
   job.on('failed', function() {
     console.log('FAILURE >>> ' + job.handle);
     client.close();
   });
 
 }
+

@@ -12,7 +12,7 @@ export const authRoutes = function(app) {
   });
 
   app.post(
-    "/api/auth/signup",
+    "/auth/signup",
     [
       verifySignUp.checkDuplicateUsernameOrEmail,
       verifySignUp.checkRolesExisted
@@ -20,7 +20,7 @@ export const authRoutes = function(app) {
     signup
   );
 
-  app.post("/api/auth/signin", signin);
+  app.post("/auth/signin", signin);
 
 };
 

@@ -10,6 +10,8 @@ import {getThing, forgetThing, setThing, createThing, getThings} from './databas
 
 // Use Gearman to provide the stack connector.
 
+//import db from "./models/index.js";
+
 import gearmanode from "gearmanode";
 
 const client = gearmanode.client();
@@ -141,6 +143,30 @@ app.get('/:tokens', async (req, res) => {
 
   res.send({ datagram:datagram, uuid:thing.uuid, thing:thing, thingReport:thingReport })
 });
+
+app.post('/:tokens', async (req, res) => {
+  const startTime = new Date(Date.now());
+  const tokens = req.params.tokens;
+console.log(tokens);
+  const datagram = {text:tokens, agentInput:null};
+  const thing = await getThing(null, tokens);
+
+  const milliseconds = new Date(Date.now()) - startTime;
+  const thingReport = {message: 'Read tokens.',runtime:milliseconds};
+
+  callAgent(thing.uuid, tokens);
+
+  if (tokens === 'authenticate') {
+if (thing.variables === false) {
+thing.variables = {};
+}
+thing.variables.authenticate = {status:"authenticated", refreshedAt:Date.now()};
+  }
+
+
+  res.send({ datagram:datagram, uuid:thing.uuid, thing:thing, thingReport:thingReport })
+});
+
 
 // start the in-memory MongoDB instance
 startDatabase().then(async () => {

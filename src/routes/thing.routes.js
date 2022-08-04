@@ -1,4 +1,4 @@
-import { authJwt, decodeToken } from "../middleware/authJwt.js";
+import { authJwt } from "../middleware/authJwt.js";
 import {
   allAccess,
   moderatorBoard,
@@ -52,34 +52,45 @@ export const thingRoutes = function (app) {
     };
 
   let token = req.headers["x-access-token"];
+const decodedToken = await authJwt.decodeToken(token);
 
-const decodedToken = decodeToken(token);
-var from = null;
-if (decodedToken && decodedToken.username) {
-from = decodedToken.username;
+var id = null;
+if (decodedToken && decodedToken.id) {
+id = decodedToken.id;
 }
-console.log("decodedToken", decodedToken);
-const response = await getThings(from);
-console.log(response);
+
+//const id = getId(req);
+
+const response = await getThings(id);
     res.send({
       uuid: null,
       datagram: false,
 //      thing: false,
       thingReport: thingReport,
-things:response
+things:response,
+id:id,
     });
 
     //dev
     //res.send(await getThings());
   });
 
-  app.get("/thing/", async (req, res) => {
-//  app.get("/thing/", [authJwt.verifyToken], async (req, res) => {
+//  app.get("/thing/", async (req, res) => {
+  app.get("/thing/", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
+
+  let token = req.headers["x-access-token"];
+const decodedToken = await authJwt.decodeToken(token);
+
+var id = null;
+if (decodedToken && decodedToken.id) {
+id = decodedToken.id;
+}
+
     const datagram = {
       subject: "Nothing",
       nomTo: "agent",
-      nomFrom: true,
+      nomFrom: id,
       agentInput: null,
     };
     const thing = await getThing(null, "agent");
@@ -106,6 +117,16 @@ things:response
     const thingReport = { message: "Made a new Thing.", runtime: milliseconds };
 
     //  callAgent(thing.uuid, "Post");
+
+  let token = req.headers["x-access-token"];
+const decodedToken = await authJwt.decodeToken(token);
+
+var id = null;
+if (decodedToken && decodedToken.id) {
+id = decodedToken.id;
+}
+
+datagram.from = id;
 
     res.send({
       datagram: datagram,

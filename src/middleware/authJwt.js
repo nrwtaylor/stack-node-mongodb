@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import config from  "../config/auth.config.js";
+import config from "../config/auth.config.js";
 
 import db from "../models/index.js";
 
@@ -24,15 +24,13 @@ export const decodeToken = (token) => {
   if (!token) {
     return null;
   }
-  jwt.verify(token, config.secret, (err, decoded) => {
+  return jwt.verify(token, config.secret, (err, decoded) => {
     if (err) {
       return true;
     }
-console.log(decoded);
-return decoded;
+    return decoded;
   });
 };
-
 
 export const isAdmin = (req, res, next) => {
   User.findById(req.userId).exec((err, user) => {
@@ -42,7 +40,7 @@ export const isAdmin = (req, res, next) => {
     }
     Role.find(
       {
-        _id: { $in: user.roles }
+        _id: { $in: user.roles },
       },
       (err, roles) => {
         if (err) {
@@ -70,7 +68,7 @@ export const isModerator = (req, res, next) => {
     }
     Role.find(
       {
-        _id: { $in: user.roles }
+        _id: { $in: user.roles },
       },
       (err, roles) => {
         if (err) {
@@ -92,6 +90,7 @@ export const isModerator = (req, res, next) => {
 export const authJwt = {
   verifyToken,
   isAdmin,
-  isModerator
+  isModerator,
+  decodeToken,
 };
 //module.exports = authJwt;

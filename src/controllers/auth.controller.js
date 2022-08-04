@@ -56,7 +56,7 @@ export const signup = (req, res) => {
   });
 };
 export const signin = (req, res) => {
-  console.log("auth.controller.js signin req", req);
+
   User.findOne({
     username: req.body.username
   })

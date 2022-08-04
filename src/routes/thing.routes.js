@@ -1,4 +1,4 @@
-import { authJwt } from "../middleware/authJwt.js";
+import { authJwt, decodeToken } from "../middleware/authJwt.js";
 import {
   allAccess,
   moderatorBoard,
@@ -42,7 +42,39 @@ export const thingRoutes = function (app) {
     //res.send(await getThings());
   });
 
-  app.get("/thing/", [authJwt.verifyToken], async (req, res) => {
+  app.get("/things/", async (req, res) => {
+  // app.get("/things/", [authJwt.verifyToken], async (req, res) => {
+    const startTime = new Date(Date.now());
+    const milliseconds = new Date(Date.now()) - startTime;
+    const thingReport = {
+      message: "Token authenticated.",
+      runtime: milliseconds,
+    };
+
+  let token = req.headers["x-access-token"];
+
+const decodedToken = decodeToken(token);
+var from = null;
+if (decodedToken && decodedToken.username) {
+from = decodedToken.username;
+}
+console.log("decodedToken", decodedToken);
+const response = await getThings(from);
+console.log(response);
+    res.send({
+      uuid: null,
+      datagram: false,
+//      thing: false,
+      thingReport: thingReport,
+things:response
+    });
+
+    //dev
+    //res.send(await getThings());
+  });
+
+  app.get("/thing/", async (req, res) => {
+//  app.get("/thing/", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
     const datagram = {
       subject: "Nothing",

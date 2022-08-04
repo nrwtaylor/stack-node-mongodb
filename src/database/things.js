@@ -26,9 +26,20 @@ export async function createThing(ad) {
   return thing;
 }
 
-export async function getThings() {
+export async function getThings(from =  null) {
   const database = await getDatabase();
-  return await database.collection(collectionName).find({}).toArray();
+  const things = await database.collection(collectionName).find({ nomTo: 'agent' }).toArray();
+const conditionedThings = things.map((thing)=>{
+
+  delete thing._id;
+  return thing;
+
+
+});
+
+return conditionedThings;
+
+
 }
 
 export async function forgetThing(uuid) {

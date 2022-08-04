@@ -52,7 +52,7 @@ app.get("/", (req, res) => {
 // set port, listen for requests
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Stack authentictor is running on port ${PORT}.`);
+  console.log(`Stack authenticator is running on port ${PORT}.`);
 });
 
 

@@ -20,6 +20,20 @@ export const verifyToken = (req, res, next) => {
   });
 };
 
+export const decodeToken = (token) => {
+  if (!token) {
+    return null;
+  }
+  jwt.verify(token, config.secret, (err, decoded) => {
+    if (err) {
+      return true;
+    }
+console.log(decoded);
+return decoded;
+  });
+};
+
+
 export const isAdmin = (req, res, next) => {
   User.findById(req.userId).exec((err, user) => {
     if (err) {

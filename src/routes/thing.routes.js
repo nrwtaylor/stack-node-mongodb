@@ -93,7 +93,7 @@ id = decodedToken.id;
       nomFrom: id,
       agentInput: null,
     };
-    const thing = await getThing(null, "agent");
+    const thing = await getThing(null, datagram);
     const milliseconds = new Date(Date.now()) - startTime;
     const thingReport = { runtime: milliseconds };
 

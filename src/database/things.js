@@ -10,8 +10,10 @@ export async function createThing(ad) {
   const event = new Date(Date.now());
   const uuid = uuidv4();
 
-  const nomFrom = null; // De-reference 
-  const nomTo = 'agent';
+  const nomFrom = ad.nomFrom; // De-reference 
+
+  var nomTo = 'agent';
+  if (ad.nomTo) {nomTo = ad.nomTo;}
 
   const associations = [uuid];
   const variables = false;
@@ -28,7 +30,7 @@ export async function createThing(ad) {
 
 export async function getThings(from =  null) {
   const database = await getDatabase();
-  const things = await database.collection(collectionName).find({ nomTo: 'agent' }).toArray();
+  const things = await database.collection(collectionName).find({ nomFrom: from }).toArray();
 const conditionedThings = things.map((thing)=>{
 
   delete thing._id;

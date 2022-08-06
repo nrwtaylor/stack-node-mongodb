@@ -56,7 +56,6 @@ export const signup = (req, res) => {
   });
 };
 export const signin = (req, res) => {
-
   User.findOne({
     username: req.body.username
   })

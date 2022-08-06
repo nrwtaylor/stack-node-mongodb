@@ -17,6 +17,23 @@ app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json());
 
+
+// this is a trivial implementation
+app.use((err, req, res, next) => {
+  // you can error out to stderr still, or not; your choice
+  console.error(err); 
+
+  // body-parser will set this to 400 if the json is in error
+  if(err.status === 400)
+  //  return res.status(err.status).send('Dude, you messed up the JSON');
+  return res.status(err.status).json({ message: "Malformed JSON request." });
+
+  return next(err); // if it's not a 400, let the default error handling do it. 
+});
+
+
+
+
 import authRoutes from './routes/auth.routes.js';
 authRoutes(app);
 

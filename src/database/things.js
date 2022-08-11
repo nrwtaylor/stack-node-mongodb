@@ -29,6 +29,7 @@ export async function createThing(ad) {
 }
 
 export async function getThings(from =  null) {
+console.log("things from", from);
   const database = await getDatabase();
   const things = await database.collection(collectionName).find({ nomFrom: from }).toArray();
 const conditionedThings = things.map((thing)=>{

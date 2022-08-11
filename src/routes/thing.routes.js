@@ -42,8 +42,8 @@ export const thingRoutes = function (app) {
     //res.send(await getThings());
   });
 
-  app.get("/things/", async (req, res) => {
-  // app.get("/things/", [authJwt.verifyToken], async (req, res) => {
+  // app.get("/things/", async (req, res) => {
+  app.get("/things/", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
     const milliseconds = new Date(Date.now()) - startTime;
     const thingReport = {
@@ -51,41 +51,41 @@ export const thingRoutes = function (app) {
       runtime: milliseconds,
     };
 
-  let token = req.headers["x-access-token"];
-const decodedToken = await authJwt.decodeToken(token);
+    let token = req.headers["x-access-token"];
+    const decodedToken = await authJwt.decodeToken(token);
 
-var id = null;
-if (decodedToken && decodedToken.id) {
-id = decodedToken.id;
-}
+    var id = null;
+    if (decodedToken && decodedToken.id) {
+      id = decodedToken.id;
+    }
 
-//const id = getId(req);
+    //const id = getId(req);
 
-const response = await getThings(id);
+    const response = await getThings(id);
     res.send({
       uuid: null,
       datagram: false,
-//      thing: false,
+      //      thing: false,
       thingReport: thingReport,
-things:response,
-id:id,
+      things: response,
+      id: id,
     });
 
     //dev
     //res.send(await getThings());
   });
 
-//  app.get("/thing/", async (req, res) => {
+  //  app.get("/thing/", async (req, res) => {
   app.get("/thing/", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
 
-  let token = req.headers["x-access-token"];
-const decodedToken = await authJwt.decodeToken(token);
+    let token = req.headers["x-access-token"];
+    const decodedToken = await authJwt.decodeToken(token);
 
-var id = null;
-if (decodedToken && decodedToken.id) {
-id = decodedToken.id;
-}
+    var id = null;
+    if (decodedToken && decodedToken.id) {
+      id = decodedToken.id;
+    }
 
     const datagram = {
       subject: "Nothing",
@@ -112,22 +112,29 @@ id = decodedToken.id;
   app.post("/thing/", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
     const datagram = req.body;
+
+    // Retrieve the user id from the access token.
+
+    let token = req.headers["x-access-token"];
+    const decodedToken = await authJwt.decodeToken(token);
+
+    var id = null;
+    if (decodedToken && decodedToken.id) {
+      id = decodedToken.id;
+    }
+
+    datagram.nomFrom = id;
+
+    console.log("POST /thing/ datagram", datagram);
+
     const thing = await createThing(datagram);
     const milliseconds = new Date(Date.now()) - startTime;
     const thingReport = { message: "Made a new Thing.", runtime: milliseconds };
 
     //  callAgent(thing.uuid, "Post");
 
-  let token = req.headers["x-access-token"];
-const decodedToken = await authJwt.decodeToken(token);
-
-var id = null;
-if (decodedToken && decodedToken.id) {
-id = decodedToken.id;
-}
-
-datagram.from = id;
-
+    datagram.from = id;
+    datagram.nomFrom = id;
     res.send({
       datagram: datagram,
       uuid: thing.uuid,

@@ -60,7 +60,8 @@ export async function setThing(uuid, ad) {
     { uuid: uuid },
     {
       $set: {
-        variables: { ...datagram },
+//        variables: { ...datagram },
+        ...datagram,
       },
     }
   );

@@ -176,15 +176,32 @@ export const thingRoutes = function (app) {
   });
 
   // endpoint to update an id
-  /*
+
 //Not a stack operation
-app.put('/thing/:id', async (req, res) => {
-  const datagram = req.body;
-  const uuid = req.params.id;
-  const thing = await setThing(uuid, datagram);
+app.put('/thing/:id', [authJwt.verifyToken], async (req, res) => {
+
+    const id = req.params.id;
+
+    let token = req.headers["x-access-token"];
+    const decodedToken = await authJwt.decodeToken(token);
+
+    var clientId = null;
+    if (decodedToken && decodedToken.id) {
+      clientId = decodedToken.id;
+    }
+
+ const datagram = req.body;
+    console.log("PUT /thing/"+id+" datagram", datagram);
+
+
+
+//  const uuid = req.params.id;
+const uuid = req.body.uuid;
+  const thing = await setThing(id, datagram);
+console.log("thing", thing);
   res.send({ message: 'Thing updated.',datagram:datagram, uuid:uuid, thing:thing });
 });
-*/
+
 
   app.get("/thing/:id/:tokens", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());

@@ -23,14 +23,49 @@ export async function createThing(ad) {
     .collection(collectionName)
     .insertOne(thing);
 
+
+console.log("thing",thing);
   delete thing._id;
 
   return thing;
 }
 
-export async function getThings(from =  null) {
+function isString(x) {
+  return Object.prototype.toString.call(x) === "[object String]"
+}
+
+export async function getThings(datagram =  null) {
   const database = await getDatabase();
-  const things = await database.collection(collectionName).find({ nomFrom: from }).toArray();
+
+var s= {};
+
+console.log("stack-node-mongodb getThings datagram",datagram);
+
+if (isString(datagram)) {
+console.log("isString", datagram);
+// assume is string
+const text = datagram;
+s = {nomFrom: text};
+
+} else {
+
+console.log("isNotString", datagram);
+
+s= datagram;
+
+}
+
+//s= {nomFrom:from.nomFrom};
+
+console.log("stack-node-mongodb getThings search s",s);
+
+
+  const things = await database.collection(collectionName).find(s).toArray();
+
+//  const things = await database.collection(collectionName).find({nomFrom:from}).toArray();
+
+//  const things = await database.collection(collectionName).find({ nomFrom: from }).toArray();
+console.log("things",things.length);
 const conditionedThings = things.map((thing)=>{
 
   delete thing._id;
@@ -43,6 +78,27 @@ return conditionedThings;
 
 
 }
+/*
+export async function getThingsByTo(to =  null) {
+  const database = await getDatabase();
+
+  const things = await database.collection(collectionName).find({nomTo:to}).toArray();
+
+//  const things = await database.collection(collectionName).find({ nomFrom: from }).toArray();
+console.log("things",things.length, "found by to", to);
+const conditionedThings = things.map((thing)=>{
+
+  delete thing._id;
+  return thing;
+
+
+});
+
+return conditionedThings;
+
+
+}
+*/
 
 export async function forgetThing(uuid) {
   const database = await getDatabase();

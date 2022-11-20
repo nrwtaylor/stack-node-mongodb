@@ -62,6 +62,10 @@ id = decodedToken.id;
 //const id = getId(req);
 
 const response = await getThings(id);
+
+console.log("stack-node-mongodb ", "/things/ id ", id ,"response", response);
+
+
     res.send({
       uuid: null,
       datagram: false,
@@ -75,9 +79,18 @@ id:id,
     //res.send(await getThings());
   });
 
-//  app.get("/thing/", async (req, res) => {
-  app.get("/thing/", [authJwt.verifyToken], async (req, res) => {
+
+  app.post("/things/", async (req, res) => {
+  // app.get("/things/", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
+    const milliseconds = new Date(Date.now()) - startTime;
+
+    const datagram = req.body;
+
+    const thingReport = {
+      message: "Token authenticated.",
+      runtime: milliseconds,
+    };
 
   let token = req.headers["x-access-token"];
 const decodedToken = await authJwt.decodeToken(token);
@@ -87,34 +100,42 @@ if (decodedToken && decodedToken.id) {
 id = decodedToken.id;
 }
 
-    const datagram = {
-      subject: "Nothing",
-      nomTo: "agent",
-      nomFrom: id,
-      agentInput: null,
-    };
-    const thing = await getThing(null, datagram);
-    const milliseconds = new Date(Date.now()) - startTime;
-    const thingReport = { runtime: milliseconds };
+//const id = getId(req);
 
-    callAgent(thing.uuid, "Get thing.");
+const search = {...datagram.agentInput, nomFrom:id};
+
+const response = await getThings(search);
+
+console.log("stack-node-mongodb ", "POST /things/ id ", id ,"response", response, "search", search);
+
 
     res.send({
-      message: "Made a new Thing.",
-      datagram: datagram,
-      uuid: thing.uuid,
-      thing: thing,
+      uuid: null,
+      datagram: false,
+//      thing: false,
       thingReport: thingReport,
+things:response,
+id:id,
     });
+
+    //dev
+    //res.send(await getThings());
   });
+
+
+
 
   // endpoint to create a new thing
   app.post("/thing/", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
     const datagram = req.body;
-    const thing = await createThing(datagram);
-    const milliseconds = new Date(Date.now()) - startTime;
-    const thingReport = { message: "Made a new Thing.", runtime: milliseconds };
+
+
+
+
+//    const thing = await createThing(datagram);
+//    const milliseconds = new Date(Date.now()) - startTime;
+//    const thingReport = { message: "Made a new Thing.", runtime: milliseconds };
 
     //  callAgent(thing.uuid, "Post");
 
@@ -127,7 +148,17 @@ id = decodedToken.id;
 }
 
 datagram.from = id;
+datagram.nomFrom = id;
 
+if (!datagram.nomTo) {datagram.nomTo = datagram.to;}
+
+    const thing = await createThing(datagram);
+    const milliseconds = new Date(Date.now()) - startTime;
+    const thingReport = { message: "Made a new Thing.", runtime: milliseconds };
+
+
+
+console.log("stack-node-mongodb id",id, "/thing/ datagram received", datagram.subject);
     res.send({
       datagram: datagram,
       uuid: thing.uuid,

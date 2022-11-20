@@ -15,10 +15,13 @@ export async function createThing(ad) {
   var nomTo = 'agent';
   if (ad.nomTo) {nomTo = ad.nomTo;}
 
+  var subject = 'merp';
+  if (ad.subject) {subject = ad.subject;}
+
   const associations = [uuid];
   const variables = false;
 
-  const thing = { input:ad, uuid: uuid, associations: associations, nomFrom:nomFrom, nomTo:nomTo, createdAt: event.toISOString(), variables:variables };
+  const thing = { input:ad, uuid: uuid, subject:subject, associations: associations, nomFrom:nomFrom, nomTo:nomTo, createdAt: event.toISOString(), variables:variables };
   const { insertedId } = await database
     .collection(collectionName)
     .insertOne(thing);

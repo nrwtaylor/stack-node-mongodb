@@ -166,7 +166,7 @@ if (!datagram.nomTo) {datagram.nomTo = datagram.to;}
 
 
 
-console.log("stack-node-mongodb id",id, "/thing/ datagram received", datagram.subject);
+console.log("stack-node-mongodb id",id, "POST /thing/ datagram received", datagram.subject);
     res.send({
       datagram: datagram,
       uuid: thing.uuid,
@@ -175,12 +175,52 @@ console.log("stack-node-mongodb id",id, "/thing/ datagram received", datagram.su
     });
   });
 
+  // endpoint to create a new thing
+  app.put("/thing/:id", [authJwt.verifyToken], async (req, res) => {
+    const startTime = new Date(Date.now());
+    const datagram = req.body;
+
+    const uuid = req.params.id;
+
+  let token = req.headers["x-access-token"];
+const decodedToken = await authJwt.decodeToken(token);
+
+var id = null;
+if (decodedToken && decodedToken.id) {
+id = decodedToken.id;
+}
+
+datagram.from = id;
+datagram.nomFrom = id;
+
+if (!datagram.nomTo) {datagram.nomTo = datagram.to;}
+
+// ???????????????????
+    const thing = await setThing(uuid, datagram);
+    const milliseconds = new Date(Date.now()) - startTime;
+    const thingReport = { message: "Thing updated.", runtime: milliseconds };
+
+
+
+console.log("stack-node-mongodb id",uuid, "PUT /thing/:uuid datagram received", datagram.subject);
+    res.send({
+      datagram: datagram,
+      uuid: thing.uuid,
+      thing: thing,
+      thingReport: thingReport,
+    });
+  });
+
+
+
   app.get("/thing/:id", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
     const uuid = req.params.id;
     const thing = await getThing(uuid);
     const milliseconds = new Date(Date.now()) - startTime;
     const thingReport = { message: "Thing got.", runtime: milliseconds };
+
+console.log("stack-node-mongodb id",uuid, "GET /thing/:uuid request");
 
     callAgent(uuid, "Get.");
 
@@ -197,26 +237,22 @@ console.log("stack-node-mongodb id",id, "/thing/ datagram received", datagram.su
     const startTime = new Date(Date.now());
     const uuid = req.params.id;
     await forgetThing(uuid);
+
+console.log("stack-node-mongodb id",uuid, "DELETE /thing/:uuid request");
+
     res.send({ message: "Forgot Thing.", id: req.params.id });
   });
 
   app.get("/thing/:id/forget", [authJwt.verifyToken], async (req, res) => {
+
     const startTime = new Date(Date.now());
     await forgetThing(req.params.id);
     const thingReport = { message: "Requested Thing be forgotten." };
+
+console.log("stack-node-mongodb id",uuid, "GET /thing/:uuid/forget request");
+
     res.send({ thingReport: thingReport, thing: { input: req.params.id } });
   });
-
-  // endpoint to update an id
-  /*
-//Not a stack operation
-app.put('/thing/:id', async (req, res) => {
-  const datagram = req.body;
-  const uuid = req.params.id;
-  const thing = await setThing(uuid, datagram);
-  res.send({ message: 'Thing updated.',datagram:datagram, uuid:uuid, thing:thing });
-});
-*/
 
   app.get("/thing/:id/:tokens", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());

@@ -21,6 +21,14 @@ export const thingRoutes = function (app) {
       "Access-Control-Allow-Headers",
       "x-access-token, Origin, Content-Type, Accept"
     );
+
+
+
+res.setHeader('Access-Control-Allow-Origin', '*');
+res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+res.setHeader('Access-Control-Allow-Credentials', true);
+
     next();
   });
 
@@ -42,8 +50,8 @@ export const thingRoutes = function (app) {
     //res.send(await getThings());
   });
 
-  // app.get("/things/", async (req, res) => {
-  app.get("/things/", [authJwt.verifyToken], async (req, res) => {
+  app.get("/things/", async (req, res) => {
+  // app.get("/things/", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
     const milliseconds = new Date(Date.now()) - startTime;
     const thingReport = {
@@ -51,56 +59,115 @@ export const thingRoutes = function (app) {
       runtime: milliseconds,
     };
 
-    let token = req.headers["x-access-token"];
-    const decodedToken = await authJwt.decodeToken(token);
+  let token = req.headers["x-access-token"];
+const decodedToken = await authJwt.decodeToken(token);
 
-    var id = null;
-    if (decodedToken && decodedToken.id) {
-      id = decodedToken.id;
-    }
+var id = null;
+if (decodedToken && decodedToken.id) {
+id = decodedToken.id;
+}
 
-    //const id = getId(req);
+//const id = getId(req);
 
-    const response = await getThings(id);
+const response = await getThings(id);
+
+console.log("stack-node-mongodb ", "/things/ id ", id ,"response", response);
+
+
     res.send({
       uuid: null,
       datagram: false,
-      //      thing: false,
+//      thing: false,
       thingReport: thingReport,
-      things: response,
-      id: id,
+things:response,
+id:id,
     });
 
     //dev
     //res.send(await getThings());
   });
 
-  //  app.get("/thing/", async (req, res) => {
-  app.get("/thing/", [authJwt.verifyToken], async (req, res) => {
+
+  app.post("/things/", async (req, res) => {
+  // app.get("/things/", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
-
-    let token = req.headers["x-access-token"];
-    const decodedToken = await authJwt.decodeToken(token);
-
-    var id = null;
-    if (decodedToken && decodedToken.id) {
-      id = decodedToken.id;
-    }
-
-    const datagram = {
-      subject: "Nothing",
-      nomTo: "agent",
-      nomFrom: id,
-      agentInput: null,
-    };
-    const thing = await getThing(null, datagram);
     const milliseconds = new Date(Date.now()) - startTime;
-    const thingReport = { runtime: milliseconds };
 
-    callAgent(thing.uuid, "Get thing.");
+    const datagram = req.body;
+
+    const thingReport = {
+      message: "Token authenticated.",
+      runtime: milliseconds,
+    };
+
+  let token = req.headers["x-access-token"];
+const decodedToken = await authJwt.decodeToken(token);
+
+var id = null;
+if (decodedToken && decodedToken.id) {
+id = decodedToken.id;
+}
+
+//const id = getId(req);
+
+const search = {...datagram.agentInput, nomFrom:id};
+
+const response = await getThings(search);
+
+console.log("stack-node-mongodb ", "POST /things/ id ", id ,"response", response, "search", search);
+
 
     res.send({
-      message: "Made a new Thing.",
+      uuid: null,
+      datagram: false,
+//      thing: false,
+      thingReport: thingReport,
+things:response,
+id:id,
+    });
+
+    //dev
+    //res.send(await getThings());
+  });
+
+
+
+
+  // endpoint to create a new thing
+  app.post("/thing/", [authJwt.verifyToken], async (req, res) => {
+    const startTime = new Date(Date.now());
+    const datagram = req.body;
+
+
+
+
+//    const thing = await createThing(datagram);
+//    const milliseconds = new Date(Date.now()) - startTime;
+//    const thingReport = { message: "Made a new Thing.", runtime: milliseconds };
+
+    //  callAgent(thing.uuid, "Post");
+
+  let token = req.headers["x-access-token"];
+const decodedToken = await authJwt.decodeToken(token);
+
+var id = null;
+if (decodedToken && decodedToken.id) {
+id = decodedToken.id;
+}
+
+datagram.from = id;
+datagram.nomFrom = id;
+
+if (!datagram.nomTo) {datagram.nomTo = datagram.to;}
+
+    const thing = await createThing(datagram);
+    const milliseconds = new Date(Date.now()) - startTime;
+    const thingReport = { message: "Made a new Thing.", runtime: milliseconds };
+
+
+
+console.log("stack-node-mongodb id",id, "POST /thing/ datagram received", datagram.subject);
+    res.send({
       datagram: datagram,
       uuid: thing.uuid,
       thing: thing,
@@ -109,32 +176,33 @@ export const thingRoutes = function (app) {
   });
 
   // endpoint to create a new thing
-  app.post("/thing/", [authJwt.verifyToken], async (req, res) => {
+  app.put("/thing/:id", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
     const datagram = req.body;
 
-    // Retrieve the user id from the access token.
+    const uuid = req.params.id;
 
-    let token = req.headers["x-access-token"];
-    const decodedToken = await authJwt.decodeToken(token);
+  let token = req.headers["x-access-token"];
+const decodedToken = await authJwt.decodeToken(token);
 
-    var id = null;
-    if (decodedToken && decodedToken.id) {
-      id = decodedToken.id;
-    }
+var id = null;
+if (decodedToken && decodedToken.id) {
+id = decodedToken.id;
+}
 
-    datagram.nomFrom = id;
+datagram.from = id;
+datagram.nomFrom = id;
 
-    console.log("POST /thing/ datagram", datagram);
+if (!datagram.nomTo) {datagram.nomTo = datagram.to;}
 
-    const thing = await createThing(datagram);
+// ???????????????????
+    const thing = await setThing(uuid, datagram);
     const milliseconds = new Date(Date.now()) - startTime;
-    const thingReport = { message: "Made a new Thing.", runtime: milliseconds };
+    const thingReport = { message: "Thing updated.", runtime: milliseconds };
 
-    //  callAgent(thing.uuid, "Post");
 
-    datagram.from = id;
-    datagram.nomFrom = id;
+
+console.log("stack-node-mongodb id",uuid, "PUT /thing/:uuid datagram received", datagram.subject);
     res.send({
       datagram: datagram,
       uuid: thing.uuid,
@@ -143,12 +211,16 @@ export const thingRoutes = function (app) {
     });
   });
 
+
+
   app.get("/thing/:id", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());
     const uuid = req.params.id;
     const thing = await getThing(uuid);
     const milliseconds = new Date(Date.now()) - startTime;
     const thingReport = { message: "Thing got.", runtime: milliseconds };
+
+console.log("stack-node-mongodb id",uuid, "GET /thing/:uuid request");
 
     callAgent(uuid, "Get.");
 
@@ -165,43 +237,22 @@ export const thingRoutes = function (app) {
     const startTime = new Date(Date.now());
     const uuid = req.params.id;
     await forgetThing(uuid);
+
+console.log("stack-node-mongodb id",uuid, "DELETE /thing/:uuid request");
+
     res.send({ message: "Forgot Thing.", id: req.params.id });
   });
 
   app.get("/thing/:id/forget", [authJwt.verifyToken], async (req, res) => {
+
     const startTime = new Date(Date.now());
     await forgetThing(req.params.id);
     const thingReport = { message: "Requested Thing be forgotten." };
+
+console.log("stack-node-mongodb id",uuid, "GET /thing/:uuid/forget request");
+
     res.send({ thingReport: thingReport, thing: { input: req.params.id } });
   });
-
-  // endpoint to update an id
-
-//Not a stack operation
-app.put('/thing/:id', [authJwt.verifyToken], async (req, res) => {
-
-    const id = req.params.id;
-
-    let token = req.headers["x-access-token"];
-    const decodedToken = await authJwt.decodeToken(token);
-
-    var clientId = null;
-    if (decodedToken && decodedToken.id) {
-      clientId = decodedToken.id;
-    }
-
- const datagram = req.body;
-    console.log("PUT /thing/"+id+" datagram", datagram);
-
-
-
-//  const uuid = req.params.id;
-const uuid = req.body.uuid;
-  const thing = await setThing(id, datagram);
-console.log("thing", thing);
-  res.send({ message: 'Thing updated.',datagram:datagram, uuid:uuid, thing:thing });
-});
-
 
   app.get("/thing/:id/:tokens", [authJwt.verifyToken], async (req, res) => {
     const startTime = new Date(Date.now());

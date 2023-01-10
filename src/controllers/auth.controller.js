@@ -72,12 +72,14 @@ export const signin = (req, res) => {
         req.body.password,
         user.password
       );
+
       if (!passwordIsValid) {
         return res.status(401).send({
           accessToken: null,
           message: "Invalid Password."
         });
       }
+console.log("secret", config);
       var token = jwt.sign({ id: user.id }, config.secret, {
         expiresIn: 86400 // 24 hours
       });
@@ -87,8 +89,8 @@ export const signin = (req, res) => {
       }
       res.status(200).send({
         id: user._id,
-        username: user.username,
-        email: user.email,
+//        username: user.username,
+//        email: user.email,
         roles: authorities,
         accessToken: token
       });
